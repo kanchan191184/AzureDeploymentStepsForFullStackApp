@@ -27,6 +27,7 @@ Update your API calls in your React code from relative paths to include the full
 ## You can access the website using the URL provided there. 
 
 ## Backend Spring boot setup
+  You need to create a Dockerfile because Docker won't know how to build or package into an image for your app without it. 
   - Create a "Dockerfile" at the root of project with this code:
      
     FROM openjdk:21-jdk-slim          //(whatever jdk version you are using)
@@ -36,9 +37,25 @@ Update your API calls in your React code from relative paths to include the full
     ENTRYPOINT ["java", "-jar", "app.jar"]
 
 # Deploy/redeploy docker file
-  -run this command
+  -run this command to build your spring boot jar:
     mvn clean package
-## Connect Azure Database for MySQL Flexible SErver with Azure Container app
+  - Build docker image using this command:
+    docker build -t employeecreator:latest .
+  - Verify the build :
+    docker images
+    
+    
+  
+
+## Create a Azure Database for MySQL flexible servers
+1. Open the "Azure Database for MySQL flexible servers" from Azure resources.
+2. Click create button to create new one.
+3. Choose "quick create" option inside Flexible server.
+4. Choose your subscription and Resource group
+5. Enter administrator lagin and password for mysql.
+6. Rest options keep as it is.
+
+## Connect Azure Database for MySQL Flexible Server with Azure Container app
    1.Define profiles in "application.properties
     # Default profile (local development)
     spring.profiles.active=local
@@ -68,7 +85,12 @@ Update your API calls in your React code from relative paths to include the full
      - For Azure deployment, set the sctive profile to azure
         spring.profiles.active=azure
   4. Secure senstitive Information
-    For better security, especially in production environments, avoid hardcoding sensitive information like   database passwords in your configuration files. Instead, consider using environment variables or Azure Key Vault to store and retrieve sensitive data securely.
+    For better security, especially in production environments, avoid hardcoding sensitive information like database passwords in your configuration files. Instead, consider using environment variables or Azure Key Vault to store and retrieve sensitive data securely.
+
+
+5. Got to your MySQL database server that you have created 
+5. Test connectivity using MySQL CLI:
+     mysql -h employee-mysql.mysql.database.azure.com -u youruser@employee-mysql -p
 
 ## To set enviornment variables you need to go to Container app in Azure.
 - From left side, choose Security > Secrets
@@ -100,4 +122,13 @@ Update your API calls in your React code from relative paths to include the full
 
 This setup ensures your frontend can communicate safely with your backend without running into browser security blocks.
 
+3. Use the environment variables when building/running, create 2 files named .env.development and .env.production at the root of frontend code(same level as src folder of frontend )
+   - When running locally, .env.development file will with this code
+       VITE_API_URL=http://localhost:8080
+   - When deploying to Azure Storage static website, use .env.production with your deployed backend URL
+      VITE_API_URL=https://<your-backend-URL>
 
+## Build your frontend for production again 
+- Run the build command at frontend folder
+      npm run build
+- Upload the new build files to your Azure storage $web container
